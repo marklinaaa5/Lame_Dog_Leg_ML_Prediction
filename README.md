@@ -1,6 +1,415 @@
 # Lame_Dog_Leg_ML_Prediction
 
-### Task description:
+## Task description:
 The Cornell Vet School wants to predict whether a dog's leg is lame (or limp) based on the numerical results of a method called Force Plate Gait Analysis. We are given features X of several dogs and we want to predict, for each leg (right-front, left-front, right-hind, left-hind), whether that leg is normal or lame. Thus, we want to make 4 different predictions y_RF, y_LF, y_RH, y_LH.
 
-### 
+## Evaluation
+For purposes of the Kaggle competition, we are going to be evaluating submissions based on macro F1-score.
+
+Note that there is a public leaderboard and a private leaderboard. When you submit predictions on your test data, about half of the test data will be evaluated to create a public leaderboard score (which you and other students can see), and the other half will be evaluated for the private leaderboard score (which only the instructors can see). The final standings will be based on the private leaderboard score.
+
+## Dataset Description
+### Files
+For each leg (LF, LH, RF, RH), there are two files:
+
+- {leg}_train.csv - the training set
+- {leg}_test.csv - the test set
+  
+There are also additional files:
+- sample_submission.csv - a sample submission file in the correct format
+- form_prediction.py - a script to help you transform the 4 sets of predictions into the final submission file
+  - note: form_prediction.py assumes that in the same working directory, you have 4 CSV files that are named "{leg}_test_labels.csv", one for each leg, and that they have 2 columns, 'id' and 'label'.
+
+### General Columns
+- id = Dog ID
+- dob = Date of Birth
+- gender = dog's gender, 0 for male and 1 for female
+- weight = dog's weight in kg
+- forceplate_date = Date that force plate gait analysis took place
+- age = Age in years
+- label = whether the leg is normal (0) or lame (1), this is the target variable
+
+### Force Plate Gait Analysis Columns
+- Gait = whether the dog is walking or trotting
+  - You will notice that there are two Gait columns. All the columns after the first
+Gait column but before the second Gait column are from the force plate gait
+analysis where the dog was walking, and all the columns after the second
+Gait column are when the dog was trotting (this is made evident by the
+values of the two Gait columns). You can observe that the column names
+following the first Gait column are identical to the column names following
+the second Gait column. It is your job to clean the data and given this
+information.
+  - The columns representing values from the force plate gait analysis are
+various recorded metrics. If you see a column like V1_LF, LF means the mean
+V1 value of left front leg (because there are multiple trials). A column such
+as STD_V1_LF would mean the standard deviation of those trials. We don’t
+know exactly what each numbered V is referring to, but the attached
+PowerPoint gives some information on how the force plate gait analysis
+works if you are curious. However, you don’t need to know the difference
+between each numbered V to design an algorithm with very high accuracy.
+
+- All Force Plate feature columns:
+  - gait
+  - speed
+  - V1_LF
+  - V1_RF
+  - V1_LH
+  - V1_RH
+  - STD_V1_LF
+  - STD_V1_RF
+  - STD_V1_LH
+  - STD_V1_RH
+  - V2_LF
+  - V2_RF
+  - V2_LH
+  - V2_RH
+  - STD_V2_LF
+  - STD_V2_RF
+  - STD_V2_LH
+  - STD_V2_RH
+  - V3_LF
+  - V3_RF
+  - V3_LH
+  - V3_RH
+  - STD_V3_LF
+  - STD_V3_RF
+  - STD_V3_LH
+  - STD_V3_RH
+  - V4_LF
+  - V4_RF
+  - V4_LH
+  - V4_RH
+  - STD_V4_LF
+  - STD_V4_RF
+  - STD_V4_LH
+  - STD_V4_RH
+  - V5_LF
+  - V5_RF
+  - V5_LH
+  - V5_RH
+  - STD_V5_LF
+  - STD_V5_RF
+  - STD_V5_LH
+  - STD_V5_RH
+  - V6_LF
+  - V6_RF
+  - V6_LH
+  - V6Z_RH
+  - STD_V6_LF
+  - STD_V6_RF
+  - STD_V6_LH
+  - STD_V6_RH
+  - V7_LF
+  - V7_RF
+  - V7_LH
+  - V7_RH
+  - STD_V7_LF
+  - STD_V7_RF
+  - STD_V7_LH
+  - STD_V7_RH
+  - V8_LF
+  - V8_RF
+  - V8_LH
+  - V8_RH
+  - STD_V8_LF
+  - STD_V8_RF
+  - STD_V8_LH
+  - STD_V8_RH
+  - V9_LF
+  - V9_RF
+  - V9_LH
+  - V9_RH
+  - STD_V9_LF
+  - STD_V9_RF
+  - STD_V9_LH
+  - STD_V9_RH
+  - V10_LF
+  - V10_RF
+  - V10_LH
+  - V10_RH
+  - STD_V10_LF
+  - STD_V10_RF
+  - STD_V10_LH
+  - STD_V10_RH
+  - V11_LF
+  - V11_RF
+  - V11_LH
+  - V11_RH
+  - STD_V11_LF
+  - STD_V11_RF
+  - STD_V11_LH
+  - STD_V11_RH
+  - V12_LF
+  - V12_RF
+  - V12_LH
+  - V12_RH
+  - STD_V12_LF
+  - STD_V12_RF
+  - STD_V12_LH
+  - STD_V12_RH
+  - V13_LF
+  - V13_RF
+  - V13_LH
+  - V13_RH
+  - STD_V13_LF
+  - STD_V13_RF
+  - STD_V13_LH
+  - STD_V13_RH
+  - Mean_V14_LF
+  - Mean_V14_RF
+  - Mean_V14_LH
+  - Mean_V14_RH
+  - STD_V14_LF
+  - STD_V14_RF
+  - STD_V14_LH
+  - STD_V14_RH
+  - V15_LF
+  - V15_RF
+  - V15_LH
+  - V15_RH
+  - STD_V15_LF
+  - STD_V15_RF
+  - STD_V15_LH
+  - STD_V15_RH
+  - V16_LF
+  - V16_RF
+  - V16_LH
+  - V16_RH
+  - V17_LF
+  - V17_RF
+  - V17_LH
+  - V17_RH
+  - V18_LF
+  - V18_RF
+  - V18_LH
+  - V18_RH
+  - V19_LF
+  - V19_RF
+  - V19_LH
+  - V19_RH
+  - V20_LF
+  - V20_RF
+  - V20_LH
+  - V20_RH
+  - V21_LF
+  - V21_RF
+  - V21_LH
+  - V21_RH
+  - V22_LF
+  - V22_RF
+  - V22_LH
+  - V22_RH
+  - V23_LF
+  - V23_RF
+  - V23_LH
+  - V23_RH
+  - V24_LF
+  - V24_RF
+  - V24_LH
+  - V24_RH
+  - V25_LF
+  - V25_RF
+  - V25_LH
+  - V25_RH
+  - V26_LF
+  - V26_RF
+  - V26_LH
+  - V26_RH
+  - V27_LF
+  - V27_RF
+  - V27_LH
+  - V27_RH
+  - V28_LF
+  - V28_RF
+  - V28_LH
+  - V28_RH
+  - V29_LF
+  - V29_RF
+  - V29_LH
+  - V29_RH
+  - V30_LF
+  - V30_RF
+  - V30_LH
+  - V30_RH
+  - Gait
+  - Speed
+  - V1_LF_trot
+  - V1_RF_trot
+  - V1_LH_trot
+  - V1_RH_trot
+  - STD_V1_LF_trot
+  - STD_V1_RF_trot
+  - STD_V1_LH_trot
+  - STD_V1_RH_trot
+  - V2_LF_trot
+  - V2_RF_trot
+  - V2_LH_trot
+  - V2_RH_trot
+  - STD_V2_LF_trot
+  - STD_V2_RF_trot
+  - STD_V2_LH_trot
+  - STD_V2_RH_trot
+  - V3_LF_trot
+  - V3_RF_trot
+  - V3_LH_trot
+  - V3_RH_trot
+  - STD_V3_LF_trot
+  - STD_V3_RF_trot
+  - STD_V3_LH_trot
+  - STD_V3_RH_trot
+  - V4_LF_trot
+  - V4_RF_trot
+  - V4_LH_trot
+  - V4_RH_trot
+  - STD_V4_LF_trot
+  - STD_V4_RF_trot
+  - STD_V4_LH_trot
+  - STD_V4_RH_trot
+  - V5_LF_trot
+  - V5_RF_trot
+  - V5_LH_trot
+  - V5_RH_trot
+  - STD_V5_LF_trot
+  - STD_V5_RF_trot
+  - STD_V5_LH_trot
+  - STD_V5_RH_trot
+  - V6_LF_trot
+  - V6_RF_trot
+  - V6_LH_trot
+  - V6Z_RH_trot
+  - STD_V6_LF_trot
+  - STD_V6_RF_trot
+  - STD_V6_LH_trot
+  - STD_V6_RH_trot
+  - V7_LF_trot
+  - V7_RF_trot
+  - V7_LH_trot
+  - V7_RH_trot
+  - STD_V7_LF_trot
+  - STD_V7_RF_trot
+  - STD_V7_LH_trot
+  - STD_V7_RH_trot
+  - V8_LF_trot
+  - V8_RF_trot
+  - V8_LH_trot
+  - V8_RH_trot
+  - STD_V8_LF_trot
+  - STD_V8_RF_trot
+  - STD_V8_LH_trot
+  - STD_V8_RH_trot
+  - V9_LF_trot
+  - V9_RF_trot
+  - V9_LH_trot
+  - V9_RH_trot
+  - STD_V9_LF_trot
+  - STD_V9_RF_trot
+  - STD_V9_LH_trot
+  - STD_V9_RH_trot
+  - V10_LF_trot
+  - V10_RF_trot
+  - V10_LH_trot
+  - V10_RH_trot
+  - STD_V10_LF_trot
+  - STD_V10_RF_trot
+  - STD_V10_LH_trot
+  - STD_V10_RH_trot
+  - V11_LF_trot
+  - V11_RF_trot
+  - V11_LH_trot
+  - V11_RH_trot
+  - STD_V11_LF_trot
+  - STD_V11_RF_trot
+  - STD_V11_LH_trot
+  - STD_V11_RH_trot
+  - V12_LF_trot
+  - V12_RF_trot
+  - V12_LH_trot
+  - V12_RH_trot
+  - STD_V12_LF_trot
+  - STD_V12_RF_trot
+  - STD_V12_LH_trot
+  - STD_V12_RH_trot
+  - V13_LF_trot
+  - V13_RF_trot
+  - V13_LH_trot
+  - V13_RH_trot
+  - STD_V13_LF_trot
+  - STD_V13_RF_trot
+  - STD_V13_LH_trot
+  - STD_V13_RH_trot
+  - Mean_V14_LF_trot
+  - Mean_V14_RF_trot
+  - Mean_V14_LH_trot
+  - Mean_V14_RH_trot
+  - STD_V14_LF_trot
+  - STD_V14_RF_trot
+  - STD_V14_LH_trot
+  - STD_V14_RH_trot
+  - V15_LF_trot
+  - V15_RF_trot
+  - V15_LH_trot
+  - V15_RH_trot
+  - STD_V15_LF_trot
+  - STD_V15_RF_trot
+  - STD_V15_LH_trot
+  - STD_V15_RH_trot
+  - V16_LF_trot
+  - V16_RF_trot
+  - V16_LH_trot
+  - V16_RH_trot
+  - V17_LF_trot
+  - V17_RF_trot
+  - V17_LH_trot
+  - V17_RH_trot
+  - V18_LF_trot
+  - V18_RF_trot
+  - V18_LH_trot
+  - V18_RH_trot
+  - V19_LF_trot
+  - V19_RF_trot
+  - V19_LH_trot
+  - V19_RH_trot
+  - V20_LF_trot
+  - V20_RF_trot
+  - V20_LH_trot
+  - V20_RH_trot
+  - V21_LF_trot
+  - V21_RF_trot
+  - V21_LH_trot
+  - V21_RH_trot
+  - V22_LF_trot
+  - V22_RF_trot
+  - V22_LH_trot
+  - V22_RH_trot
+  - V23_LF_trot
+  - V23_RF_trot
+  - V23_LH_trot
+  - V23_RH_trot
+  - V24_LF_trot
+  - V24_RF_trot
+  - V24_LH_trot
+  - V24_RH_trot
+  - V25_LF_trot
+  - V25_RF_trot
+  - V25_LH_trot
+  - V25_RH_trot
+  - V26_LF_trot
+  - V26_RF_trot
+  - V26_LH_trot
+  - V26_RH_trot
+  - V27_LF_trot
+  - V27_RF_trot
+  - V27_LH_trot
+  - V27_RH_trot
+  - V28_LF_trot
+  - V28_RF_trot
+  - V28_LH_trot
+  - V28_RH_trot
+  - V29_LF_trot
+  - V29_RF_trot
+  - V29_LH_trot
+  - V29_RH_trot
+  - V30_LF_trot
+  - V30_RF_trot
+  - V30_LH_trot
+  - V30_RH_trot
